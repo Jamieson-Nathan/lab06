@@ -1,7 +1,7 @@
 ---
 title: "Lab 06 - Ugly charts and Simpson's paradox"
-author: "Insert your name here"
-date: "Insert date here"
+author: "Jamieson Nathan"
+date: "01/21/25"
 output: github_document
 ---
 
@@ -13,6 +13,7 @@ output: github_document
 library(tidyverse) 
 library(dsbox)
 library(mosaicData) 
+library(ggplot2)
 
 staff <- read_csv("data/instructional-staff.csv")
 
@@ -156,3 +157,37 @@ ggplot(top_aquaculture, aes(x = reorder(country, aquaculture), y = aquaculture, 
 
 
 ```
+
+# 4. Smokers in Whickham
+
+```{r onto-the-next}
+
+
+```
+
+
+```{r onto-the-next}
+
+
+```
+
+```{r onto-the-next}
+
+
+```
+
+```{r onto-the-next}
+
+
+```
+
+```{r onto-the-next}
+
+
+```
+
+```{r onto-the-next}
+
+
+```
+
