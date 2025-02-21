@@ -8,27 +8,151 @@ output: github_document
 ### Load packages and data
 
 ```{r load-packages, message = FALSE}
+
+
 library(tidyverse) 
 library(dsbox)
 library(mosaicData) 
+
+staff <- read_csv("data/instructional-staff.csv")
+
 ```
 
-### Exercise 1
+### 1. Include the line plot you made above in your report and make sure the figure width is large enough to make it legible (also fix the title, axis labels, and legend label)
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r modification1}
+staff_long <- staff %>%
+  pivot_longer(cols = -faculty_type, names_to = "year") %>%
+  mutate(value = as.numeric(value))
 
-### Exercise 2
+staff_long
+```
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r graph, fig.width = 8}
+staff_long %>%
+  ggplot(aes(
+    x = year,
+    y = value,
+    group = faculty_type,
+    color = faculty_type
+  )) +
+  geom_line()+
+  theme_bw()+
+  labs(
+    x = "Year",
+    y = "Percent of Total Instructional Staff",
+    title = "Trends in Instructional Staff Employee Status",
+    color = "Faculty Status"
+  )
+```
 
-### Exercise 3
+### 2. Suppose the objective of this plot was to show that the proportion of part-time faculty have gone up over time compared to other instructional staff types.
 
-...
+```{r revised-plot}
 
-Add exercise headings as needed.
+# Adjusting the data for visualization
+staff_long <- staff %>%
+  pivot_longer(cols = -faculty_type, names_to = "year", values_to = "value") %>%
+  mutate(
+    value = as.numeric(value)
+  )
+
+# Creating the plot with a legend
+staff_long %>%
+  ggplot(aes(
+    x = year,
+    y = value,
+    group = faculty_type,
+    color = faculty_type  # Use faculty_type directly for coloring
+  )) +
+  geom_line(size = 1) +  # Adjust line width for clarity
+  scale_color_manual(  # Define custom colors for each faculty type
+    values = c(
+      "Part-Time Faculty" = "firebrick",
+      "Full-Time Tenured Faculty" = "navy",
+      "Full-Time Tenure-Track Faculty" = "navy",
+      "Full-Time Non-Tenure-Track Faculty" = "navy",
+      "Graduate Student Employees" = "darkgrey"
+    )
+  ) +
+  theme_classic() +  # Use a classic theme for a clean look
+  labs(
+    title = "Trend Analysis of Instructional Staff Types Over Time",
+    x = "Academic Year",
+    y = "Percentage of Instructional Staff",
+    color = "Faculty Type"  # Properly label the legend
+  ) +
+  geom_text(aes(label = ifelse(year == "2019", faculty_type, NA)), hjust = 1.1, vjust = 0)  # Add labels for the latest year
+
+
+```
+
+I adjusted the graph to improve clarity and interpretation. By linking colors to faculty types and using a legend, it's easier to differentiate the data. Custom colors emphasize trends, particularly the increase in part-time faculty. Labels on the latest data point highlight recent trends without cluttering the graph, ensuring the visualization is informative and visually appealing.
+
+
+### 3. Fisheries
+
+These visuals are very confusing and not super informative... 
+
+
+```{r preparing-fishies}
+
+# Load necessary libraries
+library(ggplot2)
+library(readr)
+library(dplyr)  # For data manipulation
+
+# Load the data
+fisheries <- read_csv("data/fisheries.csv")
+
+# Check the structure of the data
+str(fisheries)
+
+# Display the first few rows of the data to understand its contents
+head(fisheries)
+
+
+```
+```{r filter_data}
+
+# Assuming the data has 'capture' and 'aquaculture' as separate columns
+# Filter for top 10 in capture
+top_capture <- fisheries %>%
+  arrange(desc(capture)) %>%
+  slice(1:10)
+
+# Filter for top 10 in aquaculture
+top_aquaculture <- fisheries %>%
+  arrange(desc(aquaculture)) %>%
+  slice(1:10)
+
+```
+
+```{r visuals-fishies}
+
+# Bar chart for top 10 countries in capture
+ggplot(top_capture, aes(x = reorder(country, capture), y = capture, fill = country)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Top 10 Countries by Capture Production in 2016",
+    x = "Country",
+    y = "Production (Tons)",
+    fill = "Country"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Improve x-axis labels readability
+
+# Bar chart for top 10 countries in aquaculture
+ggplot(top_aquaculture, aes(x = reorder(country, aquaculture), y = aquaculture, fill = country)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Top 10 Countries by Aquaculture Production in 2016",
+    x = "Country",
+    y = "Production (Tons)",
+    fill = "Country"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Improve x-axis labels readability
+
+
+```
