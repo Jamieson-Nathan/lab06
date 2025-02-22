@@ -1,7 +1,7 @@
 Lab 06 - Ugly charts and Simpson’s paradox
 ================
-Insert your name here
-Insert date here
+Jamieson Nathan
+01/21/25
 
 ### Load packages and data
 
@@ -9,6 +9,7 @@ Insert date here
 library(tidyverse) 
 library(dsbox)
 library(mosaicData) 
+library(ggplot2)
 
 staff <- read_csv("data/instructional-staff.csv")
 ```
@@ -61,23 +62,21 @@ staff_long %>%
 ### 2. Suppose the objective of this plot was to show that the proportion of part-time faculty have gone up over time compared to other instructional staff types.
 
 ``` r
-# Adjusting the data for visualization
 staff_long <- staff %>%
   pivot_longer(cols = -faculty_type, names_to = "year", values_to = "value") %>%
   mutate(
     value = as.numeric(value)
   )
 
-# Creating the plot with a legend
 staff_long %>%
   ggplot(aes(
     x = year,
     y = value,
     group = faculty_type,
-    color = faculty_type  # Use faculty_type directly for coloring
+    color = faculty_type  
   )) +
-  geom_line(size = 1) +  # Adjust line width for clarity
-  scale_color_manual(  # Define custom colors for each faculty type
+  geom_line(size = 1) +  
+  scale_color_manual(  
     values = c(
       "Part-Time Faculty" = "firebrick",
       "Full-Time Tenured Faculty" = "navy",
@@ -86,14 +85,14 @@ staff_long %>%
       "Graduate Student Employees" = "darkgrey"
     )
   ) +
-  theme_classic() +  # Use a classic theme for a clean look
+  theme_classic() +  
   labs(
     title = "Trend Analysis of Instructional Staff Types Over Time",
     x = "Academic Year",
     y = "Percentage of Instructional Staff",
-    color = "Faculty Type"  # Properly label the legend
+    color = "Faculty Type"  
   ) +
-  geom_text(aes(label = ifelse(year == "2019", faculty_type, NA)), hjust = 1.1, vjust = 0)  # Add labels for the latest year
+  geom_text(aes(label = ifelse(year == "2019", faculty_type, NA)), hjust = 1.1, vjust = 0) 
 ```
 
     ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
@@ -119,12 +118,10 @@ informative and visually appealing.
 These visuals are very confusing and not super informative…
 
 ``` r
-# Load necessary libraries
 library(ggplot2)
 library(readr)
-library(dplyr)  # For data manipulation
+library(dplyr)  
 
-# Load the data
 fisheries <- read_csv("data/fisheries.csv")
 ```
 
@@ -138,7 +135,6 @@ fisheries <- read_csv("data/fisheries.csv")
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
-# Check the structure of the data
 str(fisheries)
 ```
 
@@ -157,7 +153,6 @@ str(fisheries)
     ##  - attr(*, "problems")=<externalptr>
 
 ``` r
-# Display the first few rows of the data to understand its contents
 head(fisheries)
 ```
 
@@ -172,20 +167,16 @@ head(fisheries)
     ## 6 Angola          486490         655 487145
 
 ``` r
-# Assuming the data has 'capture' and 'aquaculture' as separate columns
-# Filter for top 10 in capture
 top_capture <- fisheries %>%
   arrange(desc(capture)) %>%
   slice(1:10)
 
-# Filter for top 10 in aquaculture
 top_aquaculture <- fisheries %>%
   arrange(desc(aquaculture)) %>%
   slice(1:10)
 ```
 
 ``` r
-# Bar chart for top 10 countries in capture
 ggplot(top_capture, aes(x = reorder(country, capture), y = capture, fill = country)) +
   geom_bar(stat = "identity") +
   labs(
@@ -195,13 +186,12 @@ ggplot(top_capture, aes(x = reorder(country, capture), y = capture, fill = count
     fill = "Country"
   ) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Improve x-axis labels readability
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
 ```
 
 ![](lab-06_files/figure-gfm/visuals-fishies-1.png)<!-- -->
 
 ``` r
-# Bar chart for top 10 countries in aquaculture
 ggplot(top_aquaculture, aes(x = reorder(country, aquaculture), y = aquaculture, fill = country)) +
   geom_bar(stat = "identity") +
   labs(
@@ -211,7 +201,143 @@ ggplot(top_aquaculture, aes(x = reorder(country, aquaculture), y = aquaculture, 
     fill = "Country"
   ) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Improve x-axis labels readability
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  
 ```
 
 ![](lab-06_files/figure-gfm/visuals-fishies-2.png)<!-- -->
+
+# Smokers in Whickham
+
+### What type of study do you think these data come from: observational or experiment? Why?
+
+### How many observations are in this dataset? What does each observation represent?
+
+### How many variables are in this dataset? What type of variable is each? Display each variable using an appropriate visualization.
+
+### What would you expect the relationship between smoking status and health outcome to be?
+
+``` r
+library(tidyverse)
+
+data(Whickham)
+
+?Whickham
+```
+
+    ## starting httpd help server ... done
+
+Likely observational, as it would be pretty unethical to have an
+experimental control forcing people to smoke…
+
+There are 1314 observation refering to different female participants in
+the study. There are 3 variables including outcome (survival sttus after
+20 years; alive/dead), smoking status at baseline (yes/no), and age (in
+years at onset).
+
+Just based on common-sense, it would be likely that smokers at baseline
+die more than their counterparts at the 20-year follow-up. Although
+depending on age of initial testing this may not be as clear (i.e.,
+40-year old smokers are probably still doing okay as opposed to 60+).
+
+### Create a visualization depicting the relationship between smoking status and health outcome. Briefly describe the relationship, and evaluate whether this meets your expectations. Additionally, calculate the relevant conditional probabilities to help your narrative.
+
+``` r
+Whickham %>%
+  count(smoker, outcome)
+```
+
+    ##   smoker outcome   n
+    ## 1     No   Alive 502
+    ## 2     No    Dead 230
+    ## 3    Yes   Alive 443
+    ## 4    Yes    Dead 139
+
+``` r
+Whickham %>%
+  count(smoker, outcome) %>%
+  ggplot(aes(x = outcome, y = n, group = smoker, color = smoker)) +
+  geom_line(linewidth = 2) +
+  labs(
+    title = "Survival Rates based on Smoking Status",
+    x = "",
+    y = "Number of participants",
+    color = "Smoking Status"
+  ) +
+  theme_minimal()
+```
+
+![](lab-06_files/figure-gfm/smoker-survival-rates-1.png)<!-- -->
+
+``` r
+Whickham %>%
+  count(smoker, outcome) %>%
+  group_by(smoker) %>%
+  mutate(cond_prob = n /sum(n))
+```
+
+    ## # A tibble: 4 × 4
+    ## # Groups:   smoker [2]
+    ##   smoker outcome     n cond_prob
+    ##   <fct>  <fct>   <int>     <dbl>
+    ## 1 No     Alive     502     0.686
+    ## 2 No     Dead      230     0.314
+    ## 3 Yes    Alive     443     0.761
+    ## 4 Yes    Dead      139     0.239
+
+Contrary to expectations, these lines seem somewhat unrelated, and the
+conditional probability supports this. There does not seem to be much of
+a relationship between smoking status and survival rates at a 20-year
+followup. Perhaps Big Tobacco was right and cig’s are good for you… Or
+we need a longer follow-up.
+
+### Re-create the visualization depicting the relationship between smoking status and health outcome, faceted by age_cat. What changed? What might explain this change? Extend the contingency table from earlier by breaking it down by age category and use it to help your narrative. We can use the contingency table to examine how the relationship between smoking status and health outcome differs between different age groups. This extension will help us better understand the patterns we see in the visualization, and explain any changes we observe.
+
+``` r
+Whickham_ages <- Whickham %>%
+ mutate(age_cat = case_when(
+    age <= "44" ~ "18-44",
+    age > "44" & age <= "64" ~ "45-64",
+    age > "64" ~ "65+",
+      ))
+
+Whickham_ages %>%
+ ggplot(aes(
+   y = fct_rev(smoker), 
+   fill = fct_rev(outcome))) +
+  geom_bar(position = "fill") + 
+   facet_wrap(~age_cat)+
+  labs(title = "Survival Rates",
+     y = "Smoking Status", x = NULL)
+```
+
+![](lab-06_files/figure-gfm/smokers-and-age-1.png)<!-- -->
+
+``` r
+Whickham_ages %>%
+  count(smoker, age_cat, outcome) %>%
+  group_by(smoker, age_cat) %>%
+  mutate(cond_prob = n /sum(n))
+```
+
+    ## # A tibble: 12 × 5
+    ## # Groups:   smoker, age_cat [6]
+    ##    smoker age_cat outcome     n cond_prob
+    ##    <fct>  <chr>   <fct>   <int>     <dbl>
+    ##  1 No     18-44   Alive     327    0.965 
+    ##  2 No     18-44   Dead       12    0.0354
+    ##  3 No     45-64   Alive     147    0.735 
+    ##  4 No     45-64   Dead       53    0.265 
+    ##  5 No     65+     Alive      28    0.145 
+    ##  6 No     65+     Dead      165    0.855 
+    ##  7 Yes    18-44   Alive     270    0.947 
+    ##  8 Yes    18-44   Dead       15    0.0526
+    ##  9 Yes    45-64   Alive     167    0.676 
+    ## 10 Yes    45-64   Dead       80    0.324 
+    ## 11 Yes    65+     Alive       6    0.12  
+    ## 12 Yes    65+     Dead       44    0.88
+
+The plot and table show a more nuanced relationship than before, with
+older adults being less likely to survive at follow-up. However, the
+differences do seem small, maybe a line plot would have made more sense
+than a bar chart… All-in-all what I am taking away is that smoking is
+good for you, thanks Mason!
